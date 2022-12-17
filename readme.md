@@ -1,3 +1,4 @@
+![banner](assets/banner.png)
 # RomaVM
 **RomaVM** is a smart contract platform built using Cosmos SDK and Tendermint and created with [Ignite CLI](https://ignite.com/cli).
 
