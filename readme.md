@@ -14,6 +14,6 @@ ignite chain serve
 
 ## Learn more
 
-- [Litepaper](https://github.com/VestaProtocol/vesta/assets/paper/litepaper.pdf)
+- [Litepaper](https://github.com/VestaProtocol/vesta/blob/master/assets/paper/litepaper.pdf)
 - [Ignite CLI](https://ignite.com/cli)
 - [Cosmos SDK docs](https://docs.cosmos.network)
