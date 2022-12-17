@@ -1,0 +1,11 @@
+syntax = "proto3";
+package roma.vm;
+
+option go_package = "github.com/VestaProtocol/roma/x/vm/types";
+
+message Program {
+  string name = 1;
+  string creator = 2;
+  string address = 3;
+  repeated uint64 code = 4;
+}

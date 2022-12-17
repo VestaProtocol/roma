@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	bankinject "github.com/VestaProtocol/roma/vminjects/bank"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -104,9 +106,9 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
 
-	romamodule "github.com/VestaProtocol/roma/x/roma"
-	romamodulekeeper "github.com/VestaProtocol/roma/x/roma/keeper"
-	romamoduletypes "github.com/VestaProtocol/roma/x/roma/types"
+	vmmodule "github.com/VestaProtocol/roma/x/vm"
+	vmmodulekeeper "github.com/VestaProtocol/roma/x/vm/keeper"
+	vmmoduletypes "github.com/VestaProtocol/roma/x/vm/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	appparams "github.com/VestaProtocol/roma/app/params"
@@ -165,7 +167,7 @@ var (
 		transfer.AppModuleBasic{},
 		ica.AppModuleBasic{},
 		vesting.AppModuleBasic{},
-		romamodule.AppModuleBasic{},
+		vmmodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
@@ -239,7 +241,7 @@ type App struct {
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
 	ScopedICAHostKeeper  capabilitykeeper.ScopedKeeper
 
-	RomaKeeper romamodulekeeper.Keeper
+	VmKeeper vmmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// mm is the module manager
@@ -284,7 +286,7 @@ func New(
 		paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey, evidencetypes.StoreKey,
 		ibctransfertypes.StoreKey, icahosttypes.StoreKey, capabilitytypes.StoreKey, group.StoreKey,
 		icacontrollertypes.StoreKey,
-		romamoduletypes.StoreKey,
+		vmmoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -502,13 +504,17 @@ func New(
 		govConfig,
 	)
 
-	app.RomaKeeper = *romamodulekeeper.NewKeeper(
+	app.VmKeeper = *vmmodulekeeper.NewKeeper(
 		appCodec,
-		keys[romamoduletypes.StoreKey],
-		keys[romamoduletypes.MemStoreKey],
-		app.GetSubspace(romamoduletypes.ModuleName),
+		keys[vmmoduletypes.StoreKey],
+		keys[vmmoduletypes.MemStoreKey],
+		app.GetSubspace(vmmoduletypes.ModuleName),
+
+		app.AccountKeeper,
+		app.BankKeeper,
+		[]vmmoduletypes.Injector{bankinject.NewInjector(app.BankKeeper, Name)},
 	)
-	romaModule := romamodule.NewAppModule(appCodec, app.RomaKeeper, app.AccountKeeper, app.BankKeeper)
+	vmModule := vmmodule.NewAppModule(appCodec, app.VmKeeper, app.AccountKeeper, app.BankKeeper)
 
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
@@ -555,7 +561,7 @@ func New(
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
 		icaModule,
-		romaModule,
+		vmModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 
@@ -585,7 +591,7 @@ func New(
 		group.ModuleName,
 		paramstypes.ModuleName,
 		vestingtypes.ModuleName,
-		romamoduletypes.ModuleName,
+		vmmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	)
 
@@ -610,7 +616,7 @@ func New(
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
-		romamoduletypes.ModuleName,
+		vmmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
 	)
 
@@ -640,7 +646,7 @@ func New(
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
-		romamoduletypes.ModuleName,
+		vmmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
@@ -670,7 +676,7 @@ func New(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
-		romaModule,
+		vmModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 	app.sm.RegisterStoreDecoders()
@@ -869,7 +875,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(ibchost.ModuleName)
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
-	paramsKeeper.Subspace(romamoduletypes.ModuleName)
+	paramsKeeper.Subspace(vmmoduletypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper

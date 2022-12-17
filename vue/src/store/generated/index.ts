@@ -1,10 +1,10 @@
 // THIS FILE IS GENERATED AUTOMATICALLY. DO NOT MODIFY.
 
-import VestaprotocolRomaRoma from './vestaprotocol.roma.roma'
+import RomaVm from './roma.vm'
 
 
 export default { 
-  VestaprotocolRomaRoma: load(VestaprotocolRomaRoma, 'vestaprotocol.roma.roma'),
+  RomaVm: load(RomaVm, 'roma.vm'),
   
 }
 

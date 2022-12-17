@@ -1,0 +1,23 @@
+syntax = "proto3";
+package roma.vm;
+
+import "gogoproto/gogo.proto";
+import "roma/vm/params.proto";
+import "roma/vm/contracts.proto";
+import "roma/vm/program.proto";
+import "roma/vm/romdata.proto";
+import "roma/vm/cronjobs.proto";
+// this line is used by starport scaffolding # genesis/proto/import
+
+option go_package = "github.com/VestaProtocol/roma/x/vm/types";
+
+// GenesisState defines the vm module's genesis state.
+message GenesisState {
+  Params params = 1 [ (gogoproto.nullable) = false ];
+  repeated Contracts contractsList = 2 [ (gogoproto.nullable) = false ];
+  uint64 contractsCount = 3;
+  repeated Program programList = 4 [ (gogoproto.nullable) = false ];
+  repeated Romdata romdataList = 5 [ (gogoproto.nullable) = false ];
+  repeated Cronjobs cronjobsList = 6 [ (gogoproto.nullable) = false ];
+  // this line is used by starport scaffolding # genesis/proto/state
+}

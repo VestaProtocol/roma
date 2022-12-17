@@ -1,0 +1,9 @@
+syntax = "proto3";
+package roma.vm;
+
+option go_package = "github.com/VestaProtocol/roma/x/vm/types";
+
+message Contracts {
+  uint64 id = 1;
+  string source = 2;
+}
