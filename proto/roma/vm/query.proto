@@ -11,7 +11,7 @@ import "roma/vm/romdata.proto";
 import "roma/vm/cronjobs.proto";
 // this line is used by starport scaffolding # 1
 
-option go_package = "github.com/VestaProtocol/Roma/x/vm/types";
+option go_package = "github.com/VestaProtocol/roma/x/vm/types";
 
 // Query defines the gRPC querier service.
 service Query {
