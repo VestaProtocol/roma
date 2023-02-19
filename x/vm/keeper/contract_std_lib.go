@@ -9,6 +9,9 @@ import (
 	"github.com/dop251/goja"
 )
 
+const Post = "POST"
+const Get = "GET"
+
 func (k Keeper) applyStandardLib(ctx sdk.Context, creator sdk.AccAddress, contractName string, contractAddress sdk.AccAddress, vm *goja.Runtime, readonly bool) {
 	std := vm.NewObject()
 	k.initFloats(ctx, vm, std)
@@ -58,13 +61,13 @@ func (k Keeper) applyStandardLib(ctx sdk.Context, creator sdk.AccAddress, contra
 		return
 	}
 
-	err = std.Set("POST", vm.ToValue("POST"))
+	err = std.Set(Post, vm.ToValue(Post))
 	if err != nil {
 		ctx.Logger().Error(err.Error())
 		return
 	}
 
-	err = std.Set("GET", vm.ToValue("GET"))
+	err = std.Set(Get, vm.ToValue(Get))
 	if err != nil {
 		ctx.Logger().Error(err.Error())
 		return
@@ -210,12 +213,12 @@ func (k Keeper) applyStandardLib(ctx sdk.Context, creator sdk.AccAddress, contra
 		var res string
 		var err error
 
-		if fetchType == "POST" {
+		if fetchType == Post {
 			res, err = k.executeContract(ctx, program.Name, code, entryPoint, contractAddress, args)
 			if err != nil {
 				return goja.Null()
 			}
-		} else if fetchType == "GET" {
+		} else if fetchType == Get {
 			res, err = k.queryContract(ctx, program.Name, code, entryPoint, args)
 			if err != nil {
 				return goja.Null()
