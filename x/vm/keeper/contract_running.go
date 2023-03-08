@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"github.com/VestaProtocol/roma/x/vm/keeper/stdlib"
 	"github.com/VestaProtocol/roma/x/vm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -9,7 +10,7 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 )
 
-func GetContractVersion(program types.Program, version string) uint64 {
+func (k Keeper) GetContractVersion(program types.Program, version string) uint64 {
 	l := len(program.Code) - 1
 
 	v, ok := sdk.NewIntFromString(version)
@@ -49,7 +50,7 @@ func (k Keeper) getContractAddress(ctx sdk.Context, contractName string) (sdk.Ac
 	return acc.GetAddress(), nil
 }
 
-func (k Keeper) initContract(ctx sdk.Context, name string, sourceCode string, creator sdk.AccAddress, args []goja.Value) (string, error) {
+func (k Keeper) InitContract(ctx sdk.Context, name string, sourceCode string, creator sdk.AccAddress, args []goja.Value) (string, error) {
 	vm, err := k.buildContract(ctx, name, sourceCode, creator, false)
 	if err != nil {
 		return "", err
@@ -86,7 +87,7 @@ func (k Keeper) initContract(ctx sdk.Context, name string, sourceCode string, cr
 	return res.String(), nil
 }
 
-func (k Keeper) executeContract(ctx sdk.Context, name string, sourceCode string, entry string, creator sdk.AccAddress, args []goja.Value) (string, error) {
+func (k Keeper) ExecuteContract(ctx sdk.Context, name string, sourceCode string, entry string, creator sdk.AccAddress, args []goja.Value) (string, error) {
 	vm, err := k.buildContract(ctx, name, sourceCode, creator, false)
 	if err != nil {
 		return "", err
@@ -130,7 +131,7 @@ func (k Keeper) executeContract(ctx sdk.Context, name string, sourceCode string,
 	return res.String(), nil
 }
 
-func (k Keeper) queryContract(ctx sdk.Context, name string, sourceCode string, entry string, args []goja.Value) (string, error) {
+func (k Keeper) QueryContract(ctx sdk.Context, name string, sourceCode string, entry string, args []goja.Value) (string, error) {
 	vm, err := k.buildContract(ctx, name, sourceCode, nil, true)
 	if err != nil {
 		return "", err
@@ -168,7 +169,7 @@ func (k Keeper) buildContract(ctx sdk.Context, name string, sourceCode string, c
 		return vm, err
 	}
 
-	k.applyStandardLib(ctx, creator, name, address, vm, readonly)
+	stdlib.ApplyStandardLib(ctx, k, creator, name, address, vm, readonly)
 
 	_, err = vm.RunString(sourceCode)
 	if err != nil {

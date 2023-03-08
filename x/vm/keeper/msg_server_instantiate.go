@@ -54,7 +54,7 @@ func (k msgServer) Instantiate(goCtx context.Context, msg *types.MsgInstantiate)
 		vals[i] = goja.ValueString(s)
 	}
 
-	_, err = k.initContract(ctx, msg.Name, code.Source, address, vals)
+	_, err = k.InitContract(ctx, msg.Name, code.Source, address, vals)
 	if err != nil {
 		ctx.Logger().Error(err.Error())
 		return nil, err

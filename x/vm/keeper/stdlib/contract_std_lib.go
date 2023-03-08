@@ -1,4 +1,4 @@
-package keeper
+package stdlib
 
 import (
 	"fmt"
@@ -12,9 +12,10 @@ import (
 const Post = "POST"
 const Get = "GET"
 
-func (k Keeper) applyStandardLib(ctx sdk.Context, creator sdk.AccAddress, contractName string, contractAddress sdk.AccAddress, vm *goja.Runtime, readonly bool) {
+func ApplyStandardLib(ctx sdk.Context, k Keeper, creator sdk.AccAddress, contractName string, contractAddress sdk.AccAddress, vm *goja.Runtime, readonly bool) {
 	std := vm.NewObject()
-	k.initFloats(ctx, vm, std)
+	k.InitFloats(ctx, vm, std)
+	initCrypto(ctx, std, vm)
 
 	context := vm.NewObject()
 
@@ -73,7 +74,7 @@ func (k Keeper) applyStandardLib(ctx sdk.Context, creator sdk.AccAddress, contra
 		return
 	}
 
-	for _, v := range k.injectors {
+	for _, v := range k.Injectors() {
 		module := vm.NewObject()
 		err := std.Set(v.Name(), module)
 		if err != nil {
@@ -106,6 +107,20 @@ func (k Keeper) applyStandardLib(ctx sdk.Context, creator sdk.AccAddress, contra
 			k.SetRomdata(ctx, toSave)
 
 			ctx.GasMeter().ConsumeGas(size.Uint64()*types.DefaultGasValues().Write, "saving data")
+
+			return goja.ValueTrue()
+		})
+		if err != nil {
+			ctx.Logger().Error(err.Error())
+			return
+		}
+
+		err = std.Set("delete", func(call goja.FunctionCall) goja.Value {
+			key := call.Argument(0).String()
+
+			k.RemoveRomdata(ctx, fmt.Sprintf("%s%s", contractAddress.String(), key))
+
+			ctx.GasMeter().ConsumeGas(types.DefaultGasValues().Write, "deleting data")
 
 			return goja.ValueTrue()
 		})
@@ -154,7 +169,7 @@ func (k Keeper) applyStandardLib(ctx sdk.Context, creator sdk.AccAddress, contra
 			return goja.Null()
 		}
 
-		v := GetContractVersion(program, versionValue)
+		v := k.GetContractVersion(program, versionValue)
 		ctx.Logger().Debug(fmt.Sprintf("Requested version: %d", v))
 
 		source, ok := k.GetContracts(ctx, v)
@@ -165,7 +180,7 @@ func (k Keeper) applyStandardLib(ctx sdk.Context, creator sdk.AccAddress, contra
 		code := source.Source
 
 		newvm := goja.New()
-		k.applyStandardLib(ctx, creator, contractName, contractAddress, newvm, readonly)
+		ApplyStandardLib(ctx, k, creator, contractName, contractAddress, newvm, readonly)
 
 		_, err := newvm.RunString(code)
 		if err != nil {
@@ -203,7 +218,7 @@ func (k Keeper) applyStandardLib(ctx sdk.Context, creator sdk.AccAddress, contra
 			return goja.Null()
 		}
 
-		source, ok := k.GetContracts(ctx, GetContractVersion(program, "-1"))
+		source, ok := k.GetContracts(ctx, k.GetContractVersion(program, "-1"))
 		if !ok {
 			return goja.Null()
 		}
@@ -214,12 +229,12 @@ func (k Keeper) applyStandardLib(ctx sdk.Context, creator sdk.AccAddress, contra
 		var err error
 
 		if fetchType == Post {
-			res, err = k.executeContract(ctx, program.Name, code, entryPoint, contractAddress, args)
+			res, err = k.ExecuteContract(ctx, program.Name, code, entryPoint, contractAddress, args)
 			if err != nil {
 				return goja.Null()
 			}
 		} else if fetchType == Get {
-			res, err = k.queryContract(ctx, program.Name, code, entryPoint, args)
+			res, err = k.QueryContract(ctx, program.Name, code, entryPoint, args)
 			if err != nil {
 				return goja.Null()
 			}

@@ -46,13 +46,13 @@ func (k Keeper) Cron(ctx sdk.Context) {
 			continue
 		}
 
-		source, ok := k.GetContracts(ctx, GetContractVersion(program, "-1"))
+		source, ok := k.GetContracts(ctx, k.GetContractVersion(program, "-1"))
 		if !ok {
 			k.RemoveCronjobs(ctx, job.Contract)
 			continue
 		}
 
-		_, err = k.executeContract(ctx, job.Contract, source.Source, job.Function, nil, []goja.Value{})
+		_, err = k.ExecuteContract(ctx, job.Contract, source.Source, job.Function, nil, []goja.Value{})
 		if err != nil {
 			continue
 		}

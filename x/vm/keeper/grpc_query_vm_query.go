@@ -26,7 +26,7 @@ func (k Keeper) Query(goCtx context.Context, req *types.QueryQueryRequest) (*typ
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrKeyNotFound, "cannot find contract '%s'", req.Name)
 	}
 
-	source, ok := k.GetContracts(ctx, GetContractVersion(program, "-1"))
+	source, ok := k.GetContracts(ctx, k.GetContractVersion(program, "-1"))
 	if !ok {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrKeyNotFound, "cannot find contract source")
 	}
@@ -39,7 +39,7 @@ func (k Keeper) Query(goCtx context.Context, req *types.QueryQueryRequest) (*typ
 		vals[i] = goja.ValueString(s)
 	}
 
-	val, err := k.queryContract(ctx, req.Name, code, req.Query, vals)
+	val, err := k.QueryContract(ctx, req.Name, code, req.Query, vals)
 	if err != nil {
 		return nil, err
 	}

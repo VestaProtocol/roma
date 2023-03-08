@@ -185,7 +185,7 @@ func (k Keeper) createDec(num string, ctx sdk.Context, vm *goja.Runtime) goja.Va
 	return dec
 }
 
-func (k Keeper) initFloats(ctx sdk.Context, vm *goja.Runtime, std *goja.Object) {
+func (k Keeper) InitFloats(ctx sdk.Context, vm *goja.Runtime, std *goja.Object) {
 	err := std.Set("NewDec", func(call goja.FunctionCall) goja.Value {
 		num := call.Argument(0).String()
 

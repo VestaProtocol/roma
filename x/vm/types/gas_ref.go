@@ -5,6 +5,7 @@ type GasValues struct {
 	Import uint64
 	Write  uint64
 	Read   uint64
+	Hash   uint64
 }
 
 func DefaultGasValues() GasValues {
@@ -13,5 +14,6 @@ func DefaultGasValues() GasValues {
 		Import: 2000,
 		Write:  2000,
 		Read:   1000,
+		Hash:   4000,
 	}
 }
