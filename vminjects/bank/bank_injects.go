@@ -115,7 +115,7 @@ func (i *Injector) Inject(ctx sdk.Context, gj *goja.Runtime, creator sdk.AccAddr
 				return goja.ValueFalse()
 			}
 
-			coins := sdk.NewCoins(sdk.NewCoin(fmt.Sprintf("roma-%s", contractName), amt))
+			coins := sdk.NewCoins(sdk.NewCoin(fmt.Sprintf("%s-%s", i.appname, contractName), amt))
 
 			err = i.keeper.(BankKeeper).SendCoinsFromAccountToModule(ctx, contractAddress, types.ModuleName, coins)
 			if err != nil {
@@ -136,7 +136,7 @@ func (i *Injector) Inject(ctx sdk.Context, gj *goja.Runtime, creator sdk.AccAddr
 
 	}
 
-	err := vm.Set("token", gj.ToValue(fmt.Sprintf("roma-%s", contractName)))
+	err := vm.Set("token", gj.ToValue(fmt.Sprintf("%s-%s", i.appname, contractName)))
 	if err != nil {
 		ctx.Logger().Error(err.Error())
 		return err
