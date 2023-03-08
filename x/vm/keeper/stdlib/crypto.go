@@ -10,7 +10,6 @@ import (
 )
 
 func initCrypto(ctx sdk.Context, std *goja.Object, vm *goja.Runtime) {
-
 	crypto := vm.NewObject()
 
 	// sha256 declaration
@@ -38,5 +37,4 @@ func initCrypto(ctx sdk.Context, std *goja.Object, vm *goja.Runtime) {
 		ctx.Logger().Error(err.Error())
 		return
 	}
-
 }

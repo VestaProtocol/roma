@@ -9,8 +9,10 @@ import (
 	"github.com/dop251/goja"
 )
 
-const Post = "POST"
-const Get = "GET"
+const (
+	Post = "POST"
+	Get  = "GET"
+)
 
 func ApplyStandardLib(ctx sdk.Context, k Keeper, creator sdk.AccAddress, contractName string, contractAddress sdk.AccAddress, vm *goja.Runtime, readonly bool) {
 	std := vm.NewObject()
