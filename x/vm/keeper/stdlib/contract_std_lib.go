@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	Post = "POST"
-	Get  = "GET"
+	Post    = "POST"
+	Get     = "GET"
+	Forward = "FORWARD"
 )
 
 func ApplyStandardLib(ctx sdk.Context, k Keeper, creator sdk.AccAddress, contractName string, contractAddress sdk.AccAddress, vm *goja.Runtime, readonly bool) {
@@ -65,6 +66,12 @@ func ApplyStandardLib(ctx sdk.Context, k Keeper, creator sdk.AccAddress, contrac
 	}
 
 	err = std.Set(Post, vm.ToValue(Post))
+	if err != nil {
+		ctx.Logger().Error(err.Error())
+		return
+	}
+
+	err = std.Set(Forward, vm.ToValue(Forward))
 	if err != nil {
 		ctx.Logger().Error(err.Error())
 		return
@@ -217,12 +224,12 @@ func ApplyStandardLib(ctx sdk.Context, k Keeper, creator sdk.AccAddress, contrac
 
 		program, found := k.GetProgram(ctx, moduleName)
 		if !found {
-			return goja.Null()
+			return throwError(fmt.Sprintf("Cannot find contract %s", moduleName), vm)
 		}
-
-		source, ok := k.GetContracts(ctx, k.GetContractVersion(program, "-1"))
+		v := k.GetContractVersion(program, "-1")
+		source, ok := k.GetContracts(ctx, v)
 		if !ok {
-			return goja.Null()
+			return throwError(fmt.Sprintf("Cannot find program %d", v), vm)
 		}
 
 		code := source.Source
@@ -233,15 +240,20 @@ func ApplyStandardLib(ctx sdk.Context, k Keeper, creator sdk.AccAddress, contrac
 		if fetchType == Post {
 			res, err = k.ExecuteContract(ctx, program.Name, code, entryPoint, contractAddress, args)
 			if err != nil {
-				return goja.Null()
+				return throwError(err.Error(), vm)
+			}
+		} else if fetchType == Forward {
+			res, err = k.ExecuteContract(ctx, program.Name, code, entryPoint, creator, args)
+			if err != nil {
+				return throwError(err.Error(), vm)
 			}
 		} else if fetchType == Get {
 			res, err = k.QueryContract(ctx, program.Name, code, entryPoint, args)
 			if err != nil {
-				return goja.Null()
+				return throwError(err.Error(), vm)
 			}
 		} else {
-			return goja.Null()
+			return throwError("no feetch method specified", vm)
 		}
 
 		return vm.ToValue(res)
